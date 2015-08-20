@@ -1,0 +1,282 @@
+<?php
+// camar_maps.module
+// By Abdullah Daud
+// 19 August 2015
+
+/**
+* @file
+* tokenrole - Token-Role Access Control
+*/
+
+/**
+ * Implements hook_permission()
+ */
+function camar_maps_permission() 
+{
+	return array(
+		'configure settings' =>  array(
+			'title' => t('Configure settings'),
+		),
+	);
+}
+
+/**
+* Implements hook_menu()
+*/	
+function camar_maps_menu() 
+{
+	$items['admin/config/services/camar_maps'] = array(
+		'title' => 'Camar Maps settings',
+		'description' => 'Configure default settings for Camar Maps.',
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('camar_maps_settings_form'),
+		'access arguments' => array('configure settings'),
+		'type' => MENU_NORMAL_ITEM,
+		);
+
+	return $items;	
+}
+
+/**
+ * Implements hook_help().
+ */
+function camar_maps_help($path, $arg)
+{
+	switch ($path) 
+	{
+		case 'admin/help#camar_maps':
+			return _camar_maps_information();
+	}
+}
+
+function _camar_maps_information()
+{
+	return t("<p>The Camar Maps module implements a Camar map filter for text format. The Camar map filter allows Camar maps to be embedded into contents.
+		Multiple Camar maps can be embedded into a content. Once configured a Camar map filter can be placed into a content using the following format:</p>
+		<p><strong>[camar-map {map = <em>mymap</em>}]</strong></p>
+		<p>Replace <em>mymap</em> with the actual map name. Please refer to the !settings for default parameters.</p>
+		<p>If the Camar map host is different from the default then use the following format:</p>
+		<p><strong>[camar-map {host = <em>http://myhost.com</em>; map = mymap}]</strong></p>
+		<p>The <em>width</em> and the <em>height</em> of the map can also be set:</p>
+		<p><strong>[camar-map {map = mymap; width = 50%; height = 200px}]</strong></p>
+		<p>If the Camar map is expecting other parameters then they can be set as the following:</p>
+		<p><strong>[camar-map {map = mymap; <em>param1</em> = <em>value1</em>; <em>param2</em> = <em>value2</em>; ... }]</strong></p>
+		<p>Replace <em>param1</em> and <em>param2</em> with their proper names. And set the values accordingly. The <em>...</em>
+		indicates that more parameters can be set.</p>",
+		array(
+			'!settings' => l(t("Camar Maps settings"), "admin/config/services/camar_maps")
+		));
+}
+
+/**
+ * Implements hook_form().
+ */
+function camar_maps_settings_form($form, &$form_state)
+{
+	$form['camar_maps_host'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Host'),
+		'#description' => t('Enter the default host.'),
+		'#default_value' => variable_get('camar_maps_host', ''),
+	);
+
+	$form['camar_maps_width'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Width'),
+		'#description' => t('Enter the default width of the map.'),
+		'#default_value' => variable_get('camar_maps_width', '100%'),
+	);
+
+	$form['camar_maps_height'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Height'),
+		'#description' => t('Enter the default height of the map.'),
+		'#default_value' => variable_get('camar_maps_height', '350px'),
+	);
+
+	return system_settings_form($form);
+}
+
+/**
+ * Implements hook_filter_info().
+ */
+function camar_maps_filter_info()
+{
+	$filters['filter_map'] = array(
+		'title' => t('Place Camar map'),
+		'description' => t('Every instance of [camar-map] in the input text will be replaced with a Camar map.'),
+		'tips callback' => '_camar_maps_filter_map_tips',
+		'process callback'  => '_camar_maps_filter_map_process',
+	);
+	
+	return $filters;
+}
+
+/**
+ * Filter tips callback for usertoken filter.
+ */
+function _camar_maps_filter_map_tips($filter, $format, $long = FALSE)
+{
+	if (!$long)
+		// This string will be shown in the content add/edit form.
+		return t('Every <em>[camar-map {host = !host; map = world; width = !width; height = !height; ... }]</em> will be replaced with a Camar map.',
+			array(
+				'!host' => variable_get('camar_maps_host', 'http://worldmap.xyz'),
+				'!width' => variable_get('camar_maps_width', '100%'),
+				'!height' => variable_get('camar_maps_height', '350px'),
+				));
+	else
+		return t('Every instance of [camar-map] in the input text will be replaced with a Camar map.');
+}
+
+function _camar_maps_extract_placeholder($text)
+{
+	$pos = strpos($text, '[camar-map');
+	
+	if ($pos === FALSE)
+		return FALSE;
+		
+	$pos2 = strpos($text, ']', $pos + 9);
+	
+	if ($pos2 == FALSE)
+		return FALSE;
+
+	$ph = substr($text, $pos, $pos2 - $pos);
+	
+	$ph = str_replace("\t", '', $ph);
+	$ph = str_replace("\n", '', $ph);
+	$ph = str_replace("\r", '', $ph);
+	
+	return array($pos, $pos2, $ph);
+}
+
+function _camar_maps_extract_ph_arguments($text)
+{
+	$pos = strpos($text, '{');
+	
+	if ($pos === FALSE)
+		return FALSE;
+		
+	$pos2 = strpos($text, '}', $pos + 1);
+	
+	if ($pos2 == FALSE)
+		return FALSE;
+
+	$ph = substr($text, $pos + 1, $pos2 - $pos - 1);
+	
+	$ph = str_replace("\t", '', $ph);
+	$ph = str_replace("\n", '', $ph);
+	$ph = str_replace("\r", '', $ph);
+	
+	return $ph;
+}
+
+function _camar_maps_get_ph_components($ph)
+{
+	$width = variable_get('camar_maps_width', '100%');
+	$height = variable_get('camar_maps_height', '350px');
+	$host = variable_get('camar_maps_host', '');
+	$map = 'world';
+	$extra = array();
+	
+	$args = _camar_maps_extract_ph_arguments($ph);
+	
+	if ($args !== FALSE)
+	{
+		$parts = explode(';', $args);
+		
+		if ($parts !== FALSE && is_array($parts))
+		{
+			foreach ($parts as $part)
+			{
+				$fld = explode('=', $part);
+				
+				if ($fld !== FALSE && is_array($fld) && count($fld) > 1)
+				{
+					$fn = strtolower(trim($fld[0]));
+					$fv = trim($fld[1]);
+
+					if ($fn == 'width')
+						$width = $fv;
+					elseif ($fn == 'height')
+						$height = $fv;
+					elseif ($fn == 'host')
+						$host = $fv;
+					elseif ($fn == 'map')
+						$map = $fv;
+					else
+						$extra[$fn] = $fv; 
+				}
+			}
+		}
+	}
+	
+	return array(
+		'width' => $width,
+		'height' => $height,
+		'host' => $host,
+		'map' => $map,
+		'extra' => $extra,
+		);	
+}
+
+$camar_maps_id = 0;
+
+/**
+ * usertoken filter process callback.
+ */
+function _camar_maps_filter_map_process($text, $filter, $format)
+{
+	$ph = _camar_maps_extract_placeholder($text);
+	
+	if ($ph === FALSE)
+		return $text;
+
+	$parts = _camar_maps_get_ph_components($ph[2]);
+
+	$id = "camar_map_";
+	
+	if (module_exists('tokenrole'))
+		$id .= tokenrole_get_crypto_token(64);
+	else
+	{
+		global $camar_maps_id;
+		$id .=  ++$camar_maps_id;
+	}
+	
+	$style = "width: " . $parts['width'] . "; height: " . $parts['height'] . "; border: none;";
+	$src = $parts['host'] . "?map=" . $parts['map'];
+
+	foreach ($parts['extra'] as $fn => $fv)
+		$src .= "&$fn=$fv";
+
+	$src .= "&fsbutton";
+	
+	$gettoken_url = url("tokenrole/gettoken");
+	
+	$filter = <<< TEXT
+<iframe id="$id" src="" style="$style"></iframe>
+<script>
+(function ($) {
+	$.ajax({
+		url: "$gettoken_url",
+		dataType : "json",
+		success: function( data ) {
+			if (data.status == 1)
+			{
+				var src = "$src&passkey=" + data.token
+				$("#$id").attr('src', src)
+			}
+		}
+	});
+})(jQuery);	
+</script>
+TEXT;
+	
+	$t1 = substr($text, 0, $ph[0]);
+	$t2 = $filter;
+	$t3 = substr($text, $ph[1] + 1);
+	
+	return _camar_maps_filter_map_process($t1 . $t2 . $t3, $filter, $format);
+}
+
