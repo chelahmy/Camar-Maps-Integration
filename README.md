@@ -3,7 +3,6 @@ Camar Maps module for Drupal 7. This module implements a filter to simplify (Cam
 
 [camar-map {map = kuala_lumpur}]
 
-It will insert a Camar map similar to the following:
 
 <iframe src="http://maps.camar.xyz/camar_map/map.php?map=kuala_lumpur&fsbutton" style="width: 100%; height: 320px;"></iframe>
 
