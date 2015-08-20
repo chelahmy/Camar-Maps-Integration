@@ -5,7 +5,9 @@ Camar Maps module for Drupal 7. This module implements a filter to simplify [Cam
 
 It will insert a Camar map that looks similar to the following (click on the image to open the actual Camar map. Github does not allow Camar map insertion here):
 
-[![Kuala Lumpur](http://camar.xyz/sites/default/files/Kuala Lumpur Map.png)](http://maps.camar.xyz/camar_map/map.php?map=kuala_lumpur)
+<a href="http://maps.camar.xyz/camar_map/map.php?map=kuala_lumpur" target="_blank">
+![Kuala Lumpur](http://camar.xyz/sites/default/files/Kuala Lumpur Map.png)
+</a>
 
 
 
