@@ -1,0 +1,12 @@
+<?php
+// camar_maps.install
+// By Abdullah Daud
+// 19 August 2015
+
+/**
+* hook_schema()
+*/
+function camar_maps_schema()
+{
+
+}
