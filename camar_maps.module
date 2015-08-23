@@ -9,6 +9,19 @@
 */
 
 /**
+ * Implement hook_init
+ */
+function camar_maps_init() 
+{
+	if (module_exists('tokenrole'))
+		$passkey = tokenrole_gettoken();
+	else
+		$passkey = '';
+	
+	drupal_add_js(array('passkey' => $passkey), 'setting');
+}
+
+/**
  * Implements hook_permission()
  */
 function camar_maps_permission() 
@@ -252,23 +265,16 @@ function _camar_maps_filter_map_process($text, $filter, $format)
 
 	$src .= "&fsbutton";
 	
-	$gettoken_url = url("tokenrole/gettoken");
-	
 	$filter = <<< TEXT
 <iframe id="$id" src="" style="$style"></iframe>
 <script>
 (function ($) {
-	$.ajax({
-		url: "$gettoken_url",
-		dataType : "json",
-		success: function( data ) {
-			if (data.status == 1)
-			{
-				var src = "$src&passkey=" + data.token
-				$("#$id").attr('src', src)
-			}
+	Drupal.behaviors.$id = {
+		attach: function (context, settings) {
+			var src = "$src&passkey=" + Drupal.settings.passkey
+			$("#$id").attr('src', src)
 		}
-	});
+	};
 })(jQuery);	
 </script>
 TEXT;
