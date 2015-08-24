@@ -156,9 +156,9 @@ function _camar_maps_extract_placeholder($text)
 
 	$ph = substr($text, $pos, $pos2 - $pos);
 	
-	$ph = str_replace("\t", '', $ph);
-	$ph = str_replace("\n", '', $ph);
-	$ph = str_replace("\r", '', $ph);
+	$ph = str_replace("\t", ' ', $ph);
+	$ph = str_replace("\n", ' ', $ph);
+	$ph = str_replace("\r", ' ', $ph);
 	
 	return array($pos, $pos2, $ph);
 }
@@ -177,9 +177,9 @@ function _camar_maps_extract_ph_arguments($text)
 
 	$ph = substr($text, $pos + 1, $pos2 - $pos - 1);
 	
-	$ph = str_replace("\t", '', $ph);
-	$ph = str_replace("\n", '', $ph);
-	$ph = str_replace("\r", '', $ph);
+	$ph = str_replace("\t", ' ', $ph);
+	$ph = str_replace("\n", ' ', $ph);
+	$ph = str_replace("\r", ' ', $ph);
 	
 	return $ph;
 }
