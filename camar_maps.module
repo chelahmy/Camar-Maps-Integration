@@ -262,8 +262,9 @@ function _camar_maps_filter_map_process($text, $filter, $format)
 
 	foreach ($parts['extra'] as $fn => $fv)
 		$src .= "&$fn=$fv";
-
+	
 	$src .= "&fsbutton";
+	$src = str_replace('"', "%22", $src);
 	
 	$filter = <<< TEXT
 <iframe id="$id" src="" style="$style"></iframe>
