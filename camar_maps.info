@@ -1,5 +1,5 @@
-name = Camar Maps
-description = Camar Maps
+name = Camar Maps Integration
+description = Camar Maps Integration
 core = 7.x
 configure = admin/config/services/camar_maps
 dependencies[] = tokenrole
