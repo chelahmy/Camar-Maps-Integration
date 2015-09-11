@@ -39,8 +39,8 @@ function camar_maps_permission()
 function camar_maps_menu() 
 {
 	$items['admin/config/services/camar_maps'] = array(
-		'title' => 'Camar Maps settings',
-		'description' => 'Configure default settings for Camar Maps.',
+		'title' => 'Camar Maps Integration settings',
+		'description' => 'Configure default settings for Camar Maps Integration.',
 		'page callback' => 'drupal_get_form',
 		'page arguments' => array('camar_maps_settings_form'),
 		'access arguments' => array('configure settings'),
@@ -64,8 +64,8 @@ function camar_maps_help($path, $arg)
 
 function _camar_maps_information()
 {
-	return t("<p>The Camar Maps module implements a Camar map filter for text format. The Camar map filter allows Camar maps to be embedded into contents.
-		Multiple Camar maps can be embedded into a content. Once configured a Camar map filter can be placed into a content using the following format:</p>
+	return t("<p>The Camar Maps Integration module implements a Camar Maps filter for text format. The Camar Maps filter allows Camar maps to be embedded into contents.
+		Multiple Camar maps can be embedded into a content. Once configured a Camar Maps filter can be placed into a content using the following format:</p>
 		<p><strong>[camar-map {map = <em>mymap</em>}]</strong></p>
 		<p>Replace <em>mymap</em> with the actual map name. Please refer to the !settings for default parameters.</p>
 		<p>If the Camar map host is different from the default then use the following format:</p>
